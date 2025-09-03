@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Leva tillsammans – Begrepp: matcha ord och förklaring (v1.1)</title>
+  <title>Leva tillsammans – Begrepp: matcha ord och förklaring (v1.2)</title>
   <style>
     :root{
       --bg:#f7f7fb; --card:#ffffff; --ink:#1f2937; --muted:#6b7280;
@@ -15,30 +15,45 @@
     h1{font-size:clamp(1.4rem,3.5vw,2rem);margin:0 0 10px}
     h2{font-size:1rem;margin:0 0 8px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
     p{margin:8px 0}
+
+    /* Primärknappar */
     button{cursor:pointer;border:0;border-radius:10px;padding:.6rem .9rem;background:var(--accent);color:#fff;font-weight:600;box-shadow:var(--shadow)}
     button.secondary{background:#fff;color:var(--ink);border:1px solid var(--border)}
     button:focus{outline:none;box-shadow:var(--focus)}
+
     .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
     #start{padding:22px}
     #start .cta{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+
+    /* Spelyta */
     #game{padding:16px}
     .controls{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:12px}
     #progress{color:var(--muted);font-weight:600}
     .columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media (max-width:760px){.columns{grid-template-columns:1fr;}}
     .list{display:grid;gap:8px}
-    .item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:.65rem .8rem;transition:transform .05s ease, background .2s ease, border-color .2s ease}
+
+    /* Enskilda rader (de är knappar) */
+    .item{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      background:#fff;border:1px solid var(--border);border-radius:12px;
+      padding:.65rem .8rem;transition:transform .05s ease, background .2s ease, border-color .2s ease;
+      color:var(--ink) !important; /* FIX: gör texten mörk på vit bakgrund */
+    }
     .item:hover{transform:translateY(-1px)}
-    .item .label{font-weight:600}
+    .item .label{font-weight:600;color:var(--ink) !important;}
     .item.term{border-left:6px solid var(--accent)}
     .item.def{border-left:6px solid var(--muted)}
     .item.selected{outline:none;box-shadow:var(--focus);border-color:var(--accent)}
     .item.matched{opacity:.7;background:#f3f4f6}
+
     .badge{font-size:.75rem;color:#fff;background:var(--muted);border-radius:999px;padding:.25rem .5rem}
     .badge.ok{background:var(--accent-2)}
     .badge.err{background:var(--error)}
     .hint{color:var(--muted);font-size:.95rem;margin-top:10px}
     .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+    /* Resultatmodal */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.32);display:grid;place-items:center;padding:16px}
     .modal[hidden]{display:none}
     .modal-content{background:#fff;border-radius:16px;max-width:820px;width:100%;padding:18px;border:1px solid var(--border);box-shadow:var(--shadow)}
@@ -48,11 +63,18 @@
     .your{color:var(--ink)}
     .correct{color:var(--muted)}
     .modal-actions{display:flex;gap:10px;margin-top:12px;justify-content:flex-end}
-    @media print{.controls,#start,.hint,.modal-actions,#resetBtn,#playAgainBtn,#printBtn{display:none!important}.modal{position:static;background:#fff;padding:0}.modal-content{box-shadow:none;border:none;padding:0}}
+
+    /* Utskrift */
+    @media print{
+      .controls,#start,.hint,.modal-actions,#resetBtn,#playAgainBtn,#printBtn{display:none!important}
+      .modal{position:static;background:#fff;padding:0}
+      .modal-content{box-shadow:none;border:none;padding:0}
+    }
   </style>
 </head>
 <body>
 <main class="app">
+  <!-- Startskärm -->
   <section id="start" class="card">
     <h1>Leva tillsammans – Begrepp</h1>
     <p>Matcha <strong>ord</strong> med rätt <strong>förklaring</strong>. Klicka först på ett ord och sedan på den förklaring som passar.</p>
@@ -62,11 +84,12 @@
     </ul>
     <div class="cta">
       <button id="startBtn">Starta spelet</button>
-      <button id="startShuffle" class="secondary" title="Slumpa ord och förklaring">Starta (slumpa båda)</button>
+      <button id="startShuffle" class="secondary" title="Slumpa ord och förklaringar">Starta (slumpa båda)</button>
     </div>
-    <p class="hint">Tips: Bädda in denna sida via <em>URL</em> i Google Sites. "Infoga kod" fungerar inte eftersom Sites tar bort scripts.</p>
+    <p class="hint">Tips: Bädda in via <em>URL</em> i Google Sites (inte “Infoga kod”, då blockeras script).</p>
   </section>
 
+  <!-- Spel -->
   <section id="game" class="card" hidden>
     <div class="controls">
       <div id="progress" aria-live="polite">0 / 10 matchade</div>
@@ -87,6 +110,7 @@
     <p id="howto" class="hint">Klicka ett ord ➜ klicka rätt förklaring. Alla par måste vara valda innan resultat visas.</p>
   </section>
 
+  <!-- Resultat -->
   <div id="resultModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <div class="modal-content">
       <h2 id="resultTitle">Resultat</h2>
@@ -101,12 +125,12 @@
 </main>
 
 <script>
-// ==== Polyfills / kompat ====
+/* ==== Polyfill för CSS.escape (äldre iPad/Safari) ==== */
 var cssEscape = (window.CSS && CSS.escape) ? CSS.escape : function(str){
-  return String(str).replace(/[^a-zA-Z0-9_\-]/g, function(ch){ return '\\' + ch; });
+  return String(str).replace(/[^a-zA-Z0-9_\-]/g, function(ch){ return '\\\\' + ch; });
 };
 
-// ==== DATA ====
+/* ==== DATA (från din PDF) ==== */
 var PAIRS = [
   { id:'konflikt',   term:'konflikt',   def:'När två eller flera personer inte kan komma överens.' },
   { id:'anklagad',   term:'anklagad',   def:'Utpekad som skyldig till brott, slarv eller liknande.' },
@@ -120,20 +144,22 @@ var PAIRS = [
   { id:'lita_pa',    term:'lita på',    def:'Ha förtroende för någon.' }
 ];
 
-// ==== Hjälp ====
+/* ==== Hjälp ==== */
 function $(sel){ return document.querySelector(sel); }
 function $all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
-function shuffle(arr){ return arr.map(function(v){return [Math.random(),v];}).sort(function(a,b){return a[0]-b[0];}).map(function(x){return x[1];}); }
-function make(tag, props){ var e=document.createElement(tag); if(props){ for(var k in props){ e[k]=props[k]; } } return e; }
+function shuffle(arr){ return arr.map(function(v){return [Math.random(),v];})
+  .sort(function(a,b){return a[0]-b[0];}).map(function(x){return x[1];}); }
+function make(tag, props){ var e=document.createElement(tag);
+  if(props){ for(var k in props){ e[k]=props[k]; } } return e; }
 
-// ==== Tillstånd ====
-var selectedTermId = null;
-var matches = new Map();      // termId -> defId
-var defUsedBy = new Map();    // defId -> termId
-var defsData = [];            // [{defId,text,answerId}]
-var termsOrder = [];
+/* ==== Tillstånd ==== */
+var selectedTermId = null;     // valt ord just nu
+var matches = new Map();       // termId -> defId
+var defUsedBy = new Map();     // defId -> termId
+var defsData = [];             // [{defId,text,answerId}]
+var termsOrder = [];           // ordning för resultatrad
 
-// ==== Element ====
+/* ==== Element ==== */
 var startCard = $('#start');
 var gameCard = $('#game');
 var startBtn = $('#startBtn');
@@ -148,7 +174,7 @@ var detailsEl = $('#details');
 var playAgainBtn = $('#playAgainBtn');
 var printBtn = $('#printBtn');
 
-// ==== Rendering ====
+/* ==== Rendering ==== */
 function buildDefs(shuffleDefs){
   if (shuffleDefs === void 0) shuffleDefs = true;
   defsList.innerHTML = '';
@@ -157,7 +183,7 @@ function buildDefs(shuffleDefs){
     var defId = 'def_' + i;
     var b = make('button', { className:'item def', type:'button' });
     b.dataset.defId = defId;
-    b.dataset.answerId = p.id;
+    b.dataset.answerId = p.id;  // korrekt term-id för denna förklaring
     b.innerHTML = '<span class="label">' + p.def + '</span>';
     b.addEventListener('click', function(){ onDefClick(b); });
     defsList.appendChild(b);
@@ -183,13 +209,15 @@ function updateProgress(){
   progressEl.textContent = matches.size + ' / ' + PAIRS.length + ' matchade';
 }
 
-// ==== Interaktion ====
+/* ==== Interaktion ==== */
 function onTermClick(btn){
   var termId = btn.dataset.termId;
+  // Om redan matchad: ångra
   if (matches.has(termId)){
     unmatchTerm(termId);
     return;
   }
+  // Välj/avvälj
   $all('.item.term').forEach(function(el){ el.classList.remove('selected'); });
   if (selectedTermId === termId){
     selectedTermId = null;
@@ -203,14 +231,20 @@ function onDefClick(btn){
   if (!selectedTermId){ blink(btn); return; }
   var defId = btn.dataset.defId;
   if (defUsedBy.has(defId)){ blink(btn); return; }
+
   matches.set(selectedTermId, defId);
   defUsedBy.set(defId, selectedTermId);
+
   var termBtn = document.querySelector('.item.term[data-term-id="' + cssEscape(selectedTermId) + '"]');
   if (termBtn){ termBtn.classList.remove('selected'); termBtn.classList.add('matched'); }
   btn.classList.add('matched');
+
   selectedTermId = null;
   updateProgress();
-  if (matches.size === PAIRS.length){ setTimeout(showResults, 300); }
+
+  if (matches.size === PAIRS.length){
+    setTimeout(showResults, 300);
+  }
 }
 
 function blink(btn){
@@ -229,7 +263,7 @@ function unmatchTerm(termId){
   updateProgress();
 }
 
-// ==== Resultat ====
+/* ==== Resultat ==== */
 function showResults(){
   var correctCount = 0;
   var byId = {};
@@ -262,9 +296,11 @@ function showResults(){
   modal.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-// ==== Livscykel ====
+/* ==== Livscykel ==== */
 function startGame(opts){
-  opts = opts || {}; var shuffleTerms = !!opts.shuffleTerms; var shuffleDefs = (opts.shuffleDefs !== false);
+  opts = opts || {};
+  var shuffleTerms = !!opts.shuffleTerms;
+  var shuffleDefs = (opts.shuffleDefs !== false);
   matches = new Map(); defUsedBy = new Map(); selectedTermId = null;
   buildTerms(shuffleTerms);
   buildDefs(shuffleDefs);
@@ -276,7 +312,7 @@ function startGame(opts){
 function resetGame(){ startGame({shuffleTerms:false, shuffleDefs:true}); }
 function playAgain(){ modal.hidden = true; resetGame(); }
 
-// ==== Händelser ====
+/* ==== Händelser ==== */
 startBtn.addEventListener('click', function(){ startGame({shuffleTerms:false, shuffleDefs:true}); });
 startShuffleBtn.addEventListener('click', function(){ startGame({shuffleTerms:true, shuffleDefs:true}); });
 resetBtn.addEventListener('click', resetGame);
