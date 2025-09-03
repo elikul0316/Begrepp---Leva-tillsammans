@@ -3,24 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Leva tillsammans – Begrepp: matcha ord och förklaring</title>
+  <title>Leva tillsammans – Begrepp: matcha ord och förklaring (v1.1)</title>
   <style>
     :root{
-      --bg:#f7f7fb;
-      --card:#ffffff;
-      --ink:#1f2937;
-      --muted:#6b7280;
-      --accent:#2563eb;
-      --accent-2:#10b981;
-      --error:#ef4444;
-      --warn:#f59e0b;
-      --border:#e5e7eb;
-      --shadow:0 6px 18px rgba(0,0,0,.08);
-      --radius:14px;
-      --focus: 0 0 0 3px rgba(37,99,235,.25);
+      --bg:#f7f7fb; --card:#ffffff; --ink:#1f2937; --muted:#6b7280;
+      --accent:#2563eb; --accent-2:#10b981; --error:#ef4444; --border:#e5e7eb;
+      --shadow:0 6px 18px rgba(0,0,0,.08); --radius:14px; --focus:0 0 0 3px rgba(37,99,235,.25)
     }
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";}
-    .app{max-width:1000px;margin:24px auto;padding:16px;}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    .app{max-width:1000px;margin:24px auto;padding:16px}
     h1{font-size:clamp(1.4rem,3.5vw,2rem);margin:0 0 10px}
     h2{font-size:1rem;margin:0 0 8px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
     p{margin:8px 0}
@@ -48,7 +39,6 @@
     .badge.err{background:var(--error)}
     .hint{color:var(--muted);font-size:.95rem;margin-top:10px}
     .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
-    /* Modal */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.32);display:grid;place-items:center;padding:16px}
     .modal[hidden]{display:none}
     .modal-content{background:#fff;border-radius:16px;max-width:820px;width:100%;padding:18px;border:1px solid var(--border);box-shadow:var(--shadow)}
@@ -58,32 +48,25 @@
     .your{color:var(--ink)}
     .correct{color:var(--muted)}
     .modal-actions{display:flex;gap:10px;margin-top:12px;justify-content:flex-end}
-    /* Print */
-    @media print{
-      .controls, #start, .hint, .modal-actions, #resetBtn, #playAgainBtn, #printBtn{display:none!important}
-      .modal{position:static;background:#fff;padding:0}
-      .modal-content{box-shadow:none;border:none;padding:0}
-    }
+    @media print{.controls,#start,.hint,.modal-actions,#resetBtn,#playAgainBtn,#printBtn{display:none!important}.modal{position:static;background:#fff;padding:0}.modal-content{box-shadow:none;border:none;padding:0}}
   </style>
 </head>
 <body>
 <main class="app">
-  <!-- Startskärm -->
   <section id="start" class="card">
     <h1>Leva tillsammans – Begrepp</h1>
-    <p>I spelet matchar man <strong>ord</strong> med rätt <strong>förklaring</strong>. Klicka först på ett ord och sedan på den förklaring som passar.</p>
+    <p>Matcha <strong>ord</strong> med rätt <strong>förklaring</strong>. Klicka först på ett ord och sedan på den förklaring som passar.</p>
     <ul>
       <li>Du kan ångra ett par genom att klicka på ordet igen.</li>
       <li>När alla par är gjorda visas resultat automatiskt.</li>
     </ul>
     <div class="cta">
       <button id="startBtn">Starta spelet</button>
-      <button id="startShuffle" class="secondary" title="Slumpa ord och förklaringar">Starta (slumpa båda)</button>
+      <button id="startShuffle" class="secondary" title="Slumpa ord och förklaring">Starta (slumpa båda)</button>
     </div>
-    <p class="hint">Tips: Fungerar på både dator och surfplatta. Tangentbord: använd <kbd>Tab</kbd> och <kbd>Enter</kbd>.</p>
+    <p class="hint">Tips: Bädda in denna sida via <em>URL</em> i Google Sites. "Infoga kod" fungerar inte eftersom Sites tar bort scripts.</p>
   </section>
 
-  <!-- Spel -->
   <section id="game" class="card" hidden>
     <div class="controls">
       <div id="progress" aria-live="polite">0 / 10 matchade</div>
@@ -104,7 +87,6 @@
     <p id="howto" class="hint">Klicka ett ord ➜ klicka rätt förklaring. Alla par måste vara valda innan resultat visas.</p>
   </section>
 
-  <!-- Resultat -->
   <div id="resultModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="resultTitle">
     <div class="modal-content">
       <h2 id="resultTitle">Resultat</h2>
@@ -119,8 +101,13 @@
 </main>
 
 <script>
-/** ==== DATA =============================================================== */
-const PAIRS = [
+// ==== Polyfills / kompat ====
+var cssEscape = (window.CSS && CSS.escape) ? CSS.escape : function(str){
+  return String(str).replace(/[^a-zA-Z0-9_\-]/g, function(ch){ return '\\' + ch; });
+};
+
+// ==== DATA ====
+var PAIRS = [
   { id:'konflikt',   term:'konflikt',   def:'När två eller flera personer inte kan komma överens.' },
   { id:'anklagad',   term:'anklagad',   def:'Utpekad som skyldig till brott, slarv eller liknande.' },
   { id:'tolka',      term:'tolka',      def:'Tyda, förstå vad någon menar.' },
@@ -133,82 +120,79 @@ const PAIRS = [
   { id:'lita_pa',    term:'lita på',    def:'Ha förtroende för någon.' }
 ];
 
-/** ==== HJÄLPFUNKTIONER =================================================== */
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-const shuffle = arr => arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
-const el = (tag, opts={}) => Object.assign(document.createElement(tag), opts);
+// ==== Hjälp ====
+function $(sel){ return document.querySelector(sel); }
+function $all(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+function shuffle(arr){ return arr.map(function(v){return [Math.random(),v];}).sort(function(a,b){return a[0]-b[0];}).map(function(x){return x[1];}); }
+function make(tag, props){ var e=document.createElement(tag); if(props){ for(var k in props){ e[k]=props[k]; } } return e; }
 
-/** ==== TILLSTÅND ========================================================== */
-let selectedTermId = null;                 // vilket ord är valt just nu
-let matches = new Map();                   // termId -> defId (unik för elementet)
-let defUsedBy = new Map();                 // defId -> termId
-let defsData = [];                         // [{defId, text, answerId}]
-let termsOrder = [];                       // lista över termers ordning (för ev. slump)
+// ==== Tillstånd ====
+var selectedTermId = null;
+var matches = new Map();      // termId -> defId
+var defUsedBy = new Map();    // defId -> termId
+var defsData = [];            // [{defId,text,answerId}]
+var termsOrder = [];
 
-/** ==== ELEMENT ============================================================ */
-const startCard   = $('#start');
-const gameCard    = $('#game');
-const startBtn    = $('#startBtn');
-const startShuffleBtn = $('#startShuffle');
-const termsList   = $('#terms');
-const defsList    = $('#defs');
-const progressEl  = $('#progress');
-const resetBtn    = $('#resetBtn');
-const modal       = $('#resultModal');
-const scoreEl     = $('#score');
-const detailsEl   = $('#details');
-const playAgainBtn= $('#playAgainBtn');
-const printBtn    = $('#printBtn');
+// ==== Element ====
+var startCard = $('#start');
+var gameCard = $('#game');
+var startBtn = $('#startBtn');
+var startShuffleBtn = $('#startShuffle');
+var termsList = $('#terms');
+var defsList = $('#defs');
+var progressEl = $('#progress');
+var resetBtn = $('#resetBtn');
+var modal = $('#resultModal');
+var scoreEl = $('#score');
+var detailsEl = $('#details');
+var playAgainBtn = $('#playAgainBtn');
+var printBtn = $('#printBtn');
 
-/** ==== RENDERING ========================================================== */
-function buildDefs(shuffleDefs=true){
+// ==== Rendering ====
+function buildDefs(shuffleDefs){
+  if (shuffleDefs === void 0) shuffleDefs = true;
   defsList.innerHTML = '';
-  const source = shuffleDefs ? shuffle(PAIRS) : [...PAIRS];
-  defsData = source.map((p, i) => {
-    const defId = 'def_' + i;
-    const b = el('button', {
-      className:'item def',
-      type:'button'
-    });
+  var source = shuffleDefs ? shuffle(PAIRS) : PAIRS.slice();
+  defsData = source.map(function(p, i){
+    var defId = 'def_' + i;
+    var b = make('button', { className:'item def', type:'button' });
     b.dataset.defId = defId;
-    b.dataset.answerId = p.id;  // korrekt term-id för denna förklaring
-    b.innerHTML = `<span class="label">${p.def}</span>`;
-    b.addEventListener('click', () => onDefClick(b));
+    b.dataset.answerId = p.id;
+    b.innerHTML = '<span class="label">' + p.def + '</span>';
+    b.addEventListener('click', function(){ onDefClick(b); });
     defsList.appendChild(b);
-    return { defId, text:p.def, answerId:p.id };
+    return { defId:defId, text:p.def, answerId:p.id };
   });
 }
 
-function buildTerms(shuffleTerms=false){
+function buildTerms(shuffleTerms){
+  if (shuffleTerms === void 0) shuffleTerms = false;
   termsList.innerHTML = '';
-  const source = shuffleTerms ? shuffle(PAIRS) : [...PAIRS];
-  termsOrder = source.map(p=>p.id);
-  source.forEach(p=>{
-    const b = el('button', { className:'item term', type:'button' });
+  var source = shuffleTerms ? shuffle(PAIRS) : PAIRS.slice();
+  termsOrder = source.map(function(p){ return p.id; });
+  source.forEach(function(p){
+    var b = make('button', { className:'item term', type:'button' });
     b.dataset.termId = p.id;
-    b.innerHTML = `<span class="label">${p.term}</span>`;
-    b.addEventListener('click', () => onTermClick(b));
+    b.innerHTML = '<span class="label">' + p.term + '</span>';
+    b.addEventListener('click', function(){ onTermClick(b); });
     termsList.appendChild(b);
   });
 }
 
 function updateProgress(){
-  progressEl.textContent = `${matches.size} / ${PAIRS.length} matchade`;
+  progressEl.textContent = matches.size + ' / ' + PAIRS.length + ' matchade';
 }
 
-/** ==== INTERAKTION ======================================================== */
+// ==== Interaktion ====
 function onTermClick(btn){
-  const termId = btn.dataset.termId;
-  // Om redan matchad: ett klick ångrar paret
-  if(matches.has(termId)){
+  var termId = btn.dataset.termId;
+  if (matches.has(termId)){
     unmatchTerm(termId);
     return;
   }
-  // Välj ord
-  $$('.item.term').forEach(el=>el.classList.remove('selected'));
-  if(selectedTermId === termId){
-    selectedTermId = null; // avmarkera
+  $all('.item.term').forEach(function(el){ el.classList.remove('selected'); });
+  if (selectedTermId === termId){
+    selectedTermId = null;
   } else {
     selectedTermId = termId;
     btn.classList.add('selected');
@@ -216,118 +200,89 @@ function onTermClick(btn){
 }
 
 function onDefClick(btn){
-  if(!selectedTermId) {
-    // valde en förklaring utan valt ord: markera kortvarigt
-    blink(btn);
-    return;
-  }
-  const defId = btn.dataset.defId;
-  if(defUsedBy.has(defId)){
-    // förklaringen är redan använd – visa blink
-    blink(btn);
-    return;
-  }
-  // skapa match
+  if (!selectedTermId){ blink(btn); return; }
+  var defId = btn.dataset.defId;
+  if (defUsedBy.has(defId)){ blink(btn); return; }
   matches.set(selectedTermId, defId);
   defUsedBy.set(defId, selectedTermId);
-  // uppdatera UI: gråa ut båda
-  const termBtn = $(`.item.term[data-term-id="${CSS.escape(selectedTermId)}"]`);
-  termBtn.classList.remove('selected');
-  termBtn.classList.add('matched');
+  var termBtn = document.querySelector('.item.term[data-term-id="' + cssEscape(selectedTermId) + '"]');
+  if (termBtn){ termBtn.classList.remove('selected'); termBtn.classList.add('matched'); }
   btn.classList.add('matched');
   selectedTermId = null;
   updateProgress();
-
-  // klart? visa resultat
-  if(matches.size === PAIRS.length){
-    setTimeout(showResults, 300);
-  }
+  if (matches.size === PAIRS.length){ setTimeout(showResults, 300); }
 }
 
 function blink(btn){
   btn.style.transform='scale(0.98)';
-  setTimeout(()=>btn.style.transform='',120);
+  setTimeout(function(){ btn.style.transform=''; }, 120);
 }
 
 function unmatchTerm(termId){
-  const defId = matches.get(termId);
+  var defId = matches.get(termId);
   matches.delete(termId);
   defUsedBy.delete(defId);
-  const termBtn = $(`.item.term[data-term-id="${CSS.escape(termId)}"]`);
-  const defBtn  = $(`.item.def[data-def-id="${CSS.escape(defId)}"]`);
-  termBtn?.classList.remove('matched','selected');
-  defBtn?.classList.remove('matched');
+  var termBtn = document.querySelector('.item.term[data-term-id="' + cssEscape(termId) + '"]');
+  var defBtn  = document.querySelector('.item.def[data-def-id="' + cssEscape(defId) + '"]');
+  if (termBtn){ termBtn.classList.remove('matched','selected'); }
+  if (defBtn){ defBtn.classList.remove('matched'); }
   updateProgress();
 }
 
-/** ==== RESULTAT =========================================================== */
+// ==== Resultat ====
 function showResults(){
-  // Bygg facit och jämför
-  let correctCount = 0;
-  const byId = Object.fromEntries(PAIRS.map(p=>[p.id, p]));
+  var correctCount = 0;
+  var byId = {};
+  PAIRS.forEach(function(p){ byId[p.id] = p; });
   detailsEl.innerHTML = '';
 
-  // skapa rad per term i den ordning vi visade termerna
-  termsOrder.forEach((termId, index) => {
-    const pair = byId[termId];
-    const chosenDefId = matches.get(termId);
-    const chosenDef = defsData.find(d=>d.defId===chosenDefId);
-    const isCorrect = chosenDef?.answerId === termId;
+  termsOrder.forEach(function(termId, index){
+    var pair = byId[termId];
+    var chosenDefId = matches.get(termId);
+    var chosenDef = defsData.find(function(d){ return d.defId === chosenDefId; });
+    var isCorrect = chosenDef && chosenDef.answerId === termId;
+    if (isCorrect) correctCount++;
 
-    if(isCorrect) correctCount++;
-
-    // indikator (nummer + rätt/fel)
-    const left = el('div', { className:'result-row', style:'display:flex;justify-content:center;align-items:center' });
+    var left = make('div', { className:'result-row', style:'display:flex;justify-content:center;align-items:center' });
     left.innerHTML = isCorrect
-      ? `<span class="badge ok" title="Rätt">✔</span>`
-      : `<span class="badge err" title="Fel">✖</span>`;
+      ? '<span class="badge ok" title="Rätt">✔</span>'
+      : '<span class="badge err" title="Fel">✖</span>';
 
-    const right = el('div', { className:'result-row' });
+    var right = make('div', { className:'result-row' });
     right.innerHTML = isCorrect
-      ? `<strong>${index+1}. ${pair.term}</strong><br><span class="your">✅ ${chosenDef.text}</span>`
-      : `<strong>${index+1}. ${pair.term}</strong><br><span class="your">❌ Ditt val: ${chosenDef?.text || '—'}</span><br><span class="correct">✅ Rätt svar: ${pair.def}</span>`;
+      ? '<strong>'+(index+1)+'. '+pair.term+'</strong><br><span class="your">✅ '+chosenDef.text+'</span>'
+      : '<strong>'+(index+1)+'. '+pair.term+'</strong><br><span class="your">❌ Ditt val: '+(chosenDef ? chosenDef.text : '—')+'</span><br><span class="correct">✅ Rätt svar: '+pair.def+'</span>';
 
     detailsEl.appendChild(left);
     detailsEl.appendChild(right);
   });
 
-  scoreEl.textContent = `Du fick ${correctCount} av ${PAIRS.length} rätt.`;
+  scoreEl.textContent = 'Du fick ' + correctCount + ' av ' + PAIRS.length + ' rätt.';
   modal.hidden = false;
   modal.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-/** ==== LIVSCYKEL ========================================================== */
-function startGame({shuffleTerms=false, shuffleDefs=true}={}){
-  matches.clear(); defUsedBy.clear(); selectedTermId = null;
+// ==== Livscykel ====
+function startGame(opts){
+  opts = opts || {}; var shuffleTerms = !!opts.shuffleTerms; var shuffleDefs = (opts.shuffleDefs !== false);
+  matches = new Map(); defUsedBy = new Map(); selectedTermId = null;
   buildTerms(shuffleTerms);
   buildDefs(shuffleDefs);
   updateProgress();
-  startCard.hidden = true;
-  gameCard.hidden = false;
+  startCard.hidden = true; gameCard.hidden = false;
   gameCard.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-function resetGame(){
-  // starta om med samma inställning (slumpa bara förklaringar som standard)
-  startGame({shuffleTerms:false, shuffleDefs:true});
-}
+function resetGame(){ startGame({shuffleTerms:false, shuffleDefs:true}); }
+function playAgain(){ modal.hidden = true; resetGame(); }
 
-function playAgain(){
-  modal.hidden = true;
-  resetGame();
-}
-
-/** ==== HÄNDELSEKOPPLING =================================================== */
-startBtn.addEventListener('click', () => startGame({shuffleTerms:false, shuffleDefs:true}));
-startShuffleBtn.addEventListener('click', () => startGame({shuffleTerms:true, shuffleDefs:true}));
+// ==== Händelser ====
+startBtn.addEventListener('click', function(){ startGame({shuffleTerms:false, shuffleDefs:true}); });
+startShuffleBtn.addEventListener('click', function(){ startGame({shuffleTerms:true, shuffleDefs:true}); });
 resetBtn.addEventListener('click', resetGame);
 playAgainBtn.addEventListener('click', playAgain);
-printBtn.addEventListener('click', () => window.print());
-
-// Stäng modalen om man klickar utanför kortet
-modal.addEventListener('click', (e)=>{
-  if(e.target === modal){ modal.hidden = true; }
-});
+printBtn.addEventListener('click', function(){ window.print(); });
+modal.addEventListener('click', function(e){ if (e.target === modal){ modal.hidden = true; } });
 </script>
 </body>
 </html>
